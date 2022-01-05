@@ -1,0 +1,6 @@
+{
+    "ffmpegLinux":"/bin/ffmpeg",
+    "ffmpegWindows":"replace with if you are in windows path to the ffmpeg.exe file",
+    "Invocation":"+",
+    "token":"your token here"
+}
