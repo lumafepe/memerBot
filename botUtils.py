@@ -55,8 +55,8 @@ async def addText(ctx):
 
 
 
-async def voiceReceiver_callback(sink, channel, *args):
-    await asyncio.sleep(0.1)
+async def useless(sink,*args):
+    await asyncio.sleep(0.001)
 
 def getfullPath(name:str):
     path=os.getcwd()
@@ -73,19 +73,3 @@ def createFilesNeeded(id:int):
         with open(file,"w") as f:
             json.dump({},f)
     
-
-async def play(client,ctx, command: str):
-    """Bot to play on "play command names" command"""
-    voice = get(client.voice_clients, guild=ctx.guild)
-
-    if voice.is_playing():
-        client.SoundQueue[ctx.guild.id].append(command)
-        return
-
-    if not command in client.SoundQueue[ctx.guild.id]:
-        client.SoundQueue[ctx.guild.id].append(command)
-
-    client.SoundPlaying[ctx.guild.id] = True
-    file=random.choice(client.locs[ctx.guild.id][command]["files"])
-    voice.play(discord.FFmpegPCMAudio(executable=client.ffmpeg, source=file))
-    voice.source.volume = 2

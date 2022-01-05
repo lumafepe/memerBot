@@ -1,18 +1,16 @@
 
 from utils import *
-from botUtils import play
 import discord
 from discord.utils import get
 from discord.ext import tasks
 import wave
-from vosk import Model, KaldiRecognizer,SetLogLevel
 
 class MySink(discord.Filters):
     """
     Buffer to store the information exported by the startRecording
     Not stock supported
     """
-    def __init__(self,recog:str,id:int,client,filters=None):
+    def __init__(self,id:int,client,filters=None):
         self.filters = {'time': 0,'users': [],'max_size': 0,}
         discord.Filters.__init__(self, **self.filters)
         self.sample_width = 2
@@ -24,14 +22,8 @@ class MySink(discord.Filters):
         self.vc = None
         self.audio_data = {}
         self.quoteQueue=[]
-        self.recog=recog
         self.guild=id
         self.client=client
-        if recog=="vosk":
-            SetLogLevel(0)
-            self.model = Model("/home/luismfp/Desktop/DiscordMemeBot/model")
-            self.recognizer = KaldiRecognizer(self.model,48000)
-            self.recognizer.SetWords(True)
 
 
     def init(self, vc):  # called under start_recording
@@ -81,26 +73,6 @@ class MySink(discord.Filters):
             elif bytesUntil30<len(userData)<bytes30seg:
                 self.voiceQueue.append(userData[self.bytesto30[user]:bytesUntil30])
                 self.bytesto30[user]+=bytesToRead
-
-    async def convertAudio(self,ctx,data:bytearray,loc:dict):
-        if (self.recog=="vosk"):
-            mono=convertToMono(data)
-            textdict=json.loads(Vosk_speech_to_tex(self.recognizer,mono))
-            text=textdict["text"]
-        print(text)
-        for i in text.split():
-            try:
-                name=removeAccentuation(i.lower())
-                if loc[name]["type"]=="voice":
-                    await play(self.client,ctx,name)
-            except: pass
-
-
-    @tasks.loop(seconds = 0.1)
-    async def playAudio(self,ctx,loc:dict):
-        for i in range(len(self.voiceQueue)):
-            elem=self.voiceQueue.pop(0)
-            await self.convertAudio(ctx,elem,loc)
 
     def cleanup(self):
         self.finished = True
