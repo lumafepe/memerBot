@@ -8,10 +8,11 @@ from discord.utils import get
 
 #returns the newEntrance or NONE if invalid
 async def addImage(Name:str,ctx,loc:dict):
+    id=ctx.guild.id
     args=ctx.message.content.split()
     if len(args)==2:
         try:
-            NewEntrance=f"imageFiles/{getNewLinkName(Name,loc)}.png"
+            NewEntrance=f"{id}/imageFiles/{getNewLinkName(Name,loc)}.png"
             await ctx.attachments[0].save(NewEntrance)
             return NewEntrance
         except:
@@ -22,10 +23,11 @@ async def addImage(Name:str,ctx,loc:dict):
         return None
 
 async def addAudio(Name:str,ctx,loc:dict):
+    id=ctx.guild.id
     args=ctx.message.content.split()
     if len(args)==2:
         try:
-            NewEntrance=f"audioFiles/{getNewLinkName(Name,loc)}.mp3"
+            NewEntrance=f"{id}/audioFiles/{getNewLinkName(Name,loc)}.mp3"
             await ctx.attachments[0].save(NewEntrance)
             return NewEntrance
         except:

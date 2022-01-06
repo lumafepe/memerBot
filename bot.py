@@ -95,7 +95,7 @@ if __name__ == '__main__':
 
 	@client.command(pass_context=True)
 	async def addCommand(ctx):
-		ctx.send(client.servers[ctx.guild.id].addCommand(ctx.message.content))
+		await ctx.send(client.servers[ctx.guild.id].addCommand(ctx.message.content))
 
 
 	@client.command(pass_context=True)
