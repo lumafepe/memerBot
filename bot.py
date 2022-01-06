@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
 	@client.command(pass_context=True)
 	async def saveQuote(ctx):
-		await ctx.send(client.servers[ctx.guild.id].saveQuote())
+		await ctx.send(client.servers[ctx.guild.id].saveQuote(ctx.message.content))
 
 	@client.command(pass_context=True)
 	async def quote(ctx):
