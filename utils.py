@@ -35,7 +35,8 @@ def getFamousQuote(InputName:str):
     redirected_output = sys.stdout = StringIO()
     exec(f"quote_generator.{fullName}_quotes()")
     sys.stdout = old_stdout
-    validList=filter(lambda x: x!="" and x[0]!="―",redirected_output.getvalue().split("\n"))
+    f=lambda x: x!="" and x[0]!="―"
+    validList=list(filter(f,redirected_output.getvalue().split("\n")))
     return random.choice(validList)
 
 
