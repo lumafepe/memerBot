@@ -1,8 +1,8 @@
 import youtube_dl
 import os
-def safeMp3File(url,outname):
+def safeMp3File(url,id,outname):
     video_info = youtube_dl.YoutubeDL().extract_info(url=url,download=False)
-    filename = f"audioFiles/{outname}.mp3"
+    filename = f"{id}/audioFiles/{outname}.mp3"
     options={
         'format':'bestaudio/best',
         'keepvideo':False,

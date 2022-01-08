@@ -1,7 +1,7 @@
-from discord import guild
+from discord import guild, threads
 from utils import*
 from botUtils import*
-
+from threading import Thread
 from botClass import MemeDiscordBot
 from discord.utils import get
 import discord
@@ -100,7 +100,9 @@ if __name__ == '__main__':
 
 	@client.command(pass_context=True)
 	async def addFile(ctx):
-		await client.servers[ctx.guild.id].addFile(ctx)
+		t=Thread(target=client.servers[ctx.guild.id].addFile,args=(ctx,))
+		t.start()
+		await asyncio.sleep(0.001)
 		
 
 

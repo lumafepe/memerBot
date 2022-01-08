@@ -26,11 +26,11 @@ class MemeDiscordBot(AutoShardedBot):
         id=ctx.guild.id
         sink=MySink(id,ctx)
         vc=None
-        try: 
+        try:
             self.servers[id].ctx=ctx
             self.servers[id].vc=vc
             self.servers[id].sink=sink
-        except: 
+        except:
             createFilesNeeded(id)
             loc=load_commands(id)
             self.servers[id]=serverClient(self.recog,id,ctx,vc,loc,sink,self.ffmpeg)
@@ -63,9 +63,9 @@ class serverClient():
         self.recog=recog
         if recog=="vosk":
             SetLogLevel(0)
-            self.model = Model("/home/luismfp/Desktop/DiscordMemeBot/model")
-            self.recognizer = KaldiRecognizer(self.model,48000)
-            self.recognizer.SetWords(True)
+            self.ptmodel = Model("/home/luismfp/Desktop/MEMERBOT/modelPT")
+            self.ptrecognizer = KaldiRecognizer(self.ptmodel,48000)
+            self.ptrecognizer.SetWords(True)
 
 
     async def play(self,command: str):
@@ -100,7 +100,7 @@ class serverClient():
             data=self.sink.voiceQueue.pop(0)
             if (self.recog=="vosk"):
                 mono=convertToMono(data)
-                textdict=json.loads(Vosk_speech_to_tex(self.recognizer,mono))
+                textdict=json.loads(Vosk_speech_to_tex(self.ptrecognizer,mono))
                 text=textdict["text"]
             for i in text.split():
                 try:
@@ -108,7 +108,7 @@ class serverClient():
                     if self.loc[name]["type"]=="voice":
                         await self.play(name)
                 except: pass
-                
+
 
     @tasks.loop(seconds = 0.1)
     async def check_sound(self):
@@ -120,7 +120,7 @@ class serverClient():
                 if (self.SoundQueue):
                     await self.play(self.SoundQueue[0])
 
-    
+
     def genQuote(self,content):
         args=content.split()
         if len(args)==3:
@@ -143,10 +143,10 @@ class serverClient():
             return('saved with success')
         return('nothing in the queue')
 
-    
+
     def delCommand(self,content):
         args=content.split()
-        if len(args)!=2: return "invalid number of arguments"   
+        if len(args)!=2: return "invalid number of arguments"
         if args[1]=="-h": return "usage: +delCommand name"
         try:
             Name=args[1].lower()
@@ -164,6 +164,7 @@ class serverClient():
         try:
             Name=removeAccentuation(args[1].lower())
             Type=args[2].lower()
+            if Type not in ["voice","text","image"]: return "not a valid time"
             self.loc[Name]={"type":Type,"files":[]}
             save_commands(self.id,self.loc)
             return "added a new command"
@@ -203,7 +204,7 @@ class serverClient():
             self.playAudio.start()
         self.check_sound.start()
         self.rape.start()
-    
+
     def suicide(self):
         self.check_sound.stop()
         self.rape.stop()

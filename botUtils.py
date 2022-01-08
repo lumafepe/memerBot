@@ -37,7 +37,7 @@ async def addAudio(Name:str,ctx,loc:dict):
     elif len(args)==3:
         link=args[2]
         try:
-            NewEntrance=safeMp3File(link,getNewLinkName(Name,loc))
+            NewEntrance=safeMp3File(link,id,getNewLinkName(Name,loc))
             return NewEntrance
         except:
             await ctx.channel.send("invalid link")
