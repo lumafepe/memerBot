@@ -1,18 +1,14 @@
-from discord import guild, threads
 from utils import*
 from botUtils import*
-from threading import Thread
 from botClass import MemeDiscordBot
 from discord.utils import get
 import discord
-from discord.ext import tasks
 import kanye as kanyeQuotes
 from keep_alive import keep_alive
-from vosk import Model, KaldiRecognizer,SetLogLevel
 
 if __name__ == '__main__':
-	client = MemeDiscordBot()	
-	
+	client = MemeDiscordBot()
+
 	@client.event
 	async def on_ready():
 		"""Bot-ready message"""
@@ -67,7 +63,7 @@ if __name__ == '__main__':
 		"""Bot to join voice room on "connect" command"""
 		if ctx.author.voice:
 			channel = ctx.message.author.voice.channel
-			client.addServer(ctx)			
+			client.addServer(ctx)
 			await channel.connect()
 			client.servers[ctx.guild.id].postConnect(get(client.voice_clients, guild=ctx.guild))
 		else: await ctx.send("You're not in a voice room.")
@@ -87,11 +83,11 @@ if __name__ == '__main__':
 	async def skip(ctx):
 		"""skip current sound"""
 		await client.servers[ctx.guild.id].skip()
-    
+
 
 	@client.command(pass_context=True)
 	async def delCommand(ctx):
-		await ctx.send(client.delCommand(ctx.message.content))
+		await ctx.send(client.servers[ctx.guild.id].delCommand(ctx.message.content))
 
 	@client.command(pass_context=True)
 	async def addCommand(ctx):
@@ -100,10 +96,8 @@ if __name__ == '__main__':
 
 	@client.command(pass_context=True)
 	async def addFile(ctx):
-		t=Thread(target=client.servers[ctx.guild.id].addFile,args=(ctx,))
-		t.start()
-		await asyncio.sleep(0.001)
-		
+		await client.servers[ctx.guild.id].addFile(ctx)
+
 
 
 	@client.event

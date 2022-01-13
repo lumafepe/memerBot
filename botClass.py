@@ -19,6 +19,8 @@ class MemeDiscordBot(AutoShardedBot):
         self.prefix=config["Invocation"]
         self.token=config["token"]
         self.recog=recog
+        self.ptmodel = Model("modelPT")
+        self.enmodel = Model("modelEN")
         self.servers={}
 
 
@@ -30,16 +32,18 @@ class MemeDiscordBot(AutoShardedBot):
             self.servers[id].ctx=ctx
             self.servers[id].vc=vc
             self.servers[id].sink=sink
+            self.servers[id].addRecognizer(self.enmodel,"en")
+            self.servers[id].addRecognizer(self.ptmodel,"pt")
         except:
             createFilesNeeded(id)
             loc=load_commands(id)
-            self.servers[id]=serverClient(self.recog,id,ctx,vc,loc,sink,self.ffmpeg)
+            self.servers[id]=serverClient(self.recog,id,ctx,vc,loc,sink,self.ffmpeg,self.ptmodel,self.enmodel)
 
     def addNonVoiceSercer(self,message):
         id=message.guild.id
         createFilesNeeded(id)
         loc=load_commands(id)
-        self.servers[id]=serverClient(self.recog,id,None,None,loc,None,self.ffmpeg)
+        self.servers[id]=serverClient(self.recog,id,None,None,loc,None,self.ffmpeg,None,None)
 
 
     def KillServer(self,ctx):
@@ -47,7 +51,7 @@ class MemeDiscordBot(AutoShardedBot):
         self.servers[id].suicide()
         del self.servers[id]
 class serverClient():
-    def __init__(self,recog:str,id:int,ctx,vc,loc:dict,sink:MySink,ffmpeg:str):
+    def __init__(self,recog:str,id:int,ctx,vc,loc:dict,sink:MySink,ffmpeg:str,ptmodel,enmodel):
         self.id=id
         self.ctx=ctx
         self.vc=vc
@@ -63,9 +67,22 @@ class serverClient():
         self.recog=recog
         if recog=="vosk":
             SetLogLevel(0)
-            self.ptmodel = Model("/home/luismfp/Desktop/MEMERBOT/modelPT")
-            self.ptrecognizer = KaldiRecognizer(self.ptmodel,48000)
-            self.ptrecognizer.SetWords(True)
+            if ptmodel:
+                self.ptRecognizer = KaldiRecognizer(ptmodel,48000)
+                self.ptRecognizer.SetWords(True)
+            else: self.ptRecognizer = None
+            if enmodel:
+                self.enRecognizer = KaldiRecognizer(ptmodel,48000)
+                self.enRecognizer.SetWords(True)
+            else: self.enRecognizer = None
+
+    def addRecognizer(self,model:Model,lang:str):
+        if lang == 'en':
+            self.enRecognizer = KaldiRecognizer(model,48000)
+            self.enRecognizer.SetWords(True)
+        elif lang == 'pt':
+            self.ptRecognizer = KaldiRecognizer(model,48000)
+            self.ptRecognizer.SetWords(True)
 
 
     async def play(self,command: str):
@@ -77,9 +94,10 @@ class serverClient():
             self.SoundQueue.append(command)
 
         self.SoundPlaying = True
-        file=random.choice(self.loc[command]["files"])
-        self.vc.play(discord.FFmpegPCMAudio(executable=self.ffmpeg, source=file))
-        self.vc.source.volume = 2
+        if self.loc[command]["files"]:
+            file=random.choice(self.loc[command]["files"])
+            self.vc.play(discord.FFmpegPCMAudio(executable=self.ffmpeg, source=file))
+            self.vc.source.volume = 2
 
     async def skip(self):
         """skip current sound"""
@@ -100,8 +118,12 @@ class serverClient():
             data=self.sink.voiceQueue.pop(0)
             if (self.recog=="vosk"):
                 mono=convertToMono(data)
-                textdict=json.loads(Vosk_speech_to_tex(self.ptrecognizer,mono))
-                text=textdict["text"]
+
+                textdict=json.loads(safe_Vosk_speech_to_text(self.ptrecognizer,mono))# remove if you don't want portuguese
+                text=textdict["text"] # remove if you don't want portuguese
+
+                textdict=json.loads(unsafe_Vosk_speech_to_text(self.enrecognizer,mono))
+                text+=textdict["text"] # switch += to = for only english
             for i in text.split():
                 try:
                     name=removeAccentuation(i.lower())
@@ -164,7 +186,8 @@ class serverClient():
         try:
             Name=removeAccentuation(args[1].lower())
             Type=args[2].lower()
-            if Type not in ["voice","text","image"]: return "not a valid time"
+            if Type not in ["voice","text","image"]: return "not a valid type"
+            if self.loc[Name]: return "command already exists"
             self.loc[Name]={"type":Type,"files":[]}
             save_commands(self.id,self.loc)
             return "added a new command"

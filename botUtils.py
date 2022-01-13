@@ -27,7 +27,10 @@ async def addAudio(Name:str,ctx,loc:dict):
     args=ctx.message.content.split()
     if len(args)==2:
         try:
-            NewEntrance=f"{id}/audioFiles/{getNewLinkName(Name,loc)}.mp3"
+            if "mp3" in ctx.attachments[0].filename:
+                NewEntrance=f"{id}/audioFiles/{getNewLinkName(Name,loc)}.mp3"
+            if "wav" in ctx.attachments[0].filename:
+                NewEntrance=f"{id}/audioFiles/{getNewLinkName(Name,loc)}.wav"
             await ctx.attachments[0].save(NewEntrance)
             return NewEntrance
         except:

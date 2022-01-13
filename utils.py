@@ -56,7 +56,16 @@ def save_commands(id:int,loc:dict):
     with open(f'{id}/commands.json', 'w') as outfile:
         json.dump(loc, outfile)
 
-def Vosk_speech_to_tex(rec:KaldiRecognizer,Monodata):
+def safe_Vosk_speech_to_text(rec:KaldiRecognizer,Monodata):
+    breakingpoint = 0
+    while True:
+        data = bytes(Monodata[breakingpoint:breakingpoint+4000])
+        if len(data) == 0: break
+        rec.AcceptWaveform(data)
+        breakingpoint += 4000
+    return rec.FinalResult()
+
+def unsafe_Vosk_speech_to_text(rec:KaldiRecognizer,Monodata):
     while True:
         data = bytes(Monodata[:4000])
         if len(data) == 0: break
