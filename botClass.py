@@ -141,7 +141,9 @@ class serverClient():
                 return "not a valid time"
             elif id not in self.sink.audio_data:
                 return "not a valid user to record"
-            else: self.sink.storeQuote(id,seconds)
+            else: 
+                self.sink.storeQuote(id,seconds)
+                return f"quote stored temporarly is now in the {len(self.sink.quoteQueue)} position"
         elif len(args)==2 and args[1]=='-h': return "usage: genQuote {@person} {Number of seconds (max 30)}"
         else: return "invalid number of arguments"
 
