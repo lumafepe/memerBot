@@ -20,7 +20,6 @@ class MemeDiscordBot(AutoShardedBot):
         self.token=config["token"]
         self.recog=recog
         self.ptmodel = Model("modelPT")
-        self.enmodel = Model("modelEN")
         self.servers={}
 
 
@@ -32,18 +31,17 @@ class MemeDiscordBot(AutoShardedBot):
             self.servers[id].ctx=ctx
             self.servers[id].vc=vc
             self.servers[id].sink=sink
-            self.servers[id].addRecognizer(self.enmodel,"en")
             self.servers[id].addRecognizer(self.ptmodel,"pt")
         except:
             createFilesNeeded(id)
             loc=load_commands(id)
-            self.servers[id]=serverClient(self.recog,id,ctx,vc,loc,sink,self.ffmpeg,self.ptmodel,self.enmodel)
+            self.servers[id]=serverClient(self.recog,id,ctx,vc,loc,sink,self.ffmpeg,self.ptmodel)
 
     def addNonVoiceSercer(self,message):
         id=message.guild.id
         createFilesNeeded(id)
         loc=load_commands(id)
-        self.servers[id]=serverClient(self.recog,id,None,None,loc,None,self.ffmpeg,None,None)
+        self.servers[id]=serverClient(self.recog,id,None,None,loc,None,self.ffmpeg,None)
 
 
     def KillServer(self,ctx):
@@ -51,7 +49,7 @@ class MemeDiscordBot(AutoShardedBot):
         self.servers[id].suicide()
         del self.servers[id]
 class serverClient():
-    def __init__(self,recog:str,id:int,ctx,vc,loc:dict,sink:MySink,ffmpeg:str,ptmodel,enmodel):
+    def __init__(self,recog:str,id:int,ctx,vc,loc:dict,sink:MySink,ffmpeg:str,ptmodel):
         self.id=id
         self.ctx=ctx
         self.vc=vc
@@ -71,16 +69,9 @@ class serverClient():
                 self.ptRecognizer = KaldiRecognizer(ptmodel,48000)
                 self.ptRecognizer.SetWords(True)
             else: self.ptRecognizer = None
-            if enmodel:
-                self.enRecognizer = KaldiRecognizer(ptmodel,48000)
-                self.enRecognizer.SetWords(True)
-            else: self.enRecognizer = None
 
     def addRecognizer(self,model:Model,lang:str):
-        if lang == 'en':
-            self.enRecognizer = KaldiRecognizer(model,48000)
-            self.enRecognizer.SetWords(True)
-        elif lang == 'pt':
+        if lang == 'pt':
             self.ptRecognizer = KaldiRecognizer(model,48000)
             self.ptRecognizer.SetWords(True)
 
@@ -119,11 +110,9 @@ class serverClient():
             if (self.recog=="vosk"):
                 mono=convertToMono(data)
 
-                textdict=json.loads(safe_Vosk_speech_to_text(self.ptrecognizer,mono))# remove if you don't want portuguese
+                textdict=json.loads(unsafe_Vosk_speech_to_text(self.ptRecognizer,mono))# remove if you don't want portuguese
                 text=textdict["text"] # remove if you don't want portuguese
-
-                textdict=json.loads(unsafe_Vosk_speech_to_text(self.enrecognizer,mono))
-                text+=textdict["text"] # switch += to = for only english
+                print(text)
             for i in text.split():
                 try:
                     name=removeAccentuation(i.lower())
@@ -187,7 +176,7 @@ class serverClient():
             Name=removeAccentuation(args[1].lower())
             Type=args[2].lower()
             if Type not in ["voice","text","image"]: return "not a valid type"
-            if self.loc[Name]: return "command already exists"
+            if Name in self.loc: return "command already exists"
             self.loc[Name]={"type":Type,"files":[]}
             save_commands(self.id,self.loc)
             return "added a new command"
