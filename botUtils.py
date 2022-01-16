@@ -4,6 +4,7 @@ import asyncio
 import os
 from u2be import *
 import discord
+import shutil
 from discord.utils import get
 
 #returns the newEntrance or NONE if invalid
@@ -78,3 +79,17 @@ def createFilesNeeded(id:int):
         with open(file,"w") as f:
             json.dump({},f)
     
+
+
+def copyServers(idOrigin:int,idDest:int,originDict:dict):
+    cd=os.getcwd()
+    folder=getfullPath(f"{idDest}")
+    try:
+        shutil.rmtree(folder)
+    except OSError as e: pass
+    shutil.copytree(f"{idOrigin}",f"{idDest}")
+    strdic=json.dumps(originDict)
+    strdic=strdic.replace(f"{idOrigin}",f"{idDest}")
+    newDic=json.loads(strdic)
+    save_commands(idDest,newDic)
+

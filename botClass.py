@@ -43,9 +43,11 @@ class MemeDiscordBot(AutoShardedBot):
         loc=load_commands(id)
         self.servers[id]=serverClient(self.recog,id,None,None,loc,None,self.ffmpeg,None)
 
+    def updateServer(self,id):
+        self.servers[id].loc=load_commands(id)
+        
 
-    def KillServer(self,ctx):
-        id=ctx.guild.id
+    def KillServer(self,id):
         self.servers[id].suicide()
         del self.servers[id]
 class serverClient():
@@ -224,3 +226,5 @@ class serverClient():
         self.rape.stop()
         self.sink.updateData.stop()
         self.playAudio.stop()
+        while self.check_sound.is_running() and self.rape.is_running() and self.sink.updateData.is_running() and self.playAudio.is_running(): pass
+        

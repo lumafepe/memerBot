@@ -99,6 +99,60 @@ if __name__ == '__main__':
 		await client.servers[ctx.guild.id].addFile(ctx)
 
 
+	@client.command(pass_context=True)
+	async def getServerId(ctx):
+		await ctx.send(f"{ctx.guild.id}")
+
+	@client.command(pass_context=True)
+	async def copyServerPreset(ctx):
+		content=ctx.message.content
+		args=content.split()
+		if len(args)<2: 
+			await ctx.send("wrong number of arguments")
+			return
+		if args[1]=="-h":
+			await ctx.send("Usage copyServerPreset (serverId to copy from) WARNING THIS WILL DELETE YOUR CURRENT PRESET")
+			return
+		originId=int(args[1])
+		originDict=load_commands(originId)
+		destinationId=ctx.guild.id
+		if not originDict:
+			await ctx.send("the server you want to copy doesn't exist or is empty")
+			return
+		copyServers(originId,destinationId,originDict)
+		if destinationId in client.servers:
+			client.updateServer(destinationId)
+		await ctx.send("done")
+		
+
+
+	@client.event
+	async def on_voice_state_update(user,before,after):
+		if user==client.user or user.bot: pass
+		elif after.channel==None and before.channel!=None:
+			users=before.channel.members
+			nonBotUsers=list(filter(lambda m:not m.bot,users))
+			if len(nonBotUsers)==0:
+				await client.servers[user.guild.id].vc.disconnect()
+				client.KillServer(user.guild.id)
+				return
+			else:
+				vc=client.servers[before.channel.guild.id].vc
+				if vc.is_playing(): vc.stop()
+				vc.play(discord.FFmpegPCMAudio(executable=client.ffmpeg, source="goodbye.mp3"))
+		elif before.channel is None and after.channel is not None:
+			if client.user in after.channel.members:
+				vc=client.servers[user.guild.id].vc
+				if vc.is_playing(): vc.stop()
+				vc.play(discord.FFmpegPCMAudio(executable=client.ffmpeg, source="welcome.mp3"))
+		
+		await asyncio.sleep(0.01)
+
+
+
+
+			
+
 
 	@client.event
 	async def on_message(message):

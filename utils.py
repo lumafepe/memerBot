@@ -46,6 +46,12 @@ def getNewLinkName(Name:str,loc:dict):
     else: return Name+str(n)
 
 
+
+
+
+
+
+
 def load_commands(id:int):
     if (not path.exists(f'{id}/commands.json')): return {}
     with open(f'{id}/commands.json') as json_file:
