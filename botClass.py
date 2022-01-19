@@ -78,32 +78,24 @@ class serverClient():
             self.ptRecognizer.SetWords(True)
 
 
-    async def play(self,command: str):
+    def play(self,command: str):
         """Bot to play on "play command names" command"""
-        if self.vc.is_playing():
-            self.SoundQueue.append(command)
-            return
-        if not command in self.SoundQueue:
-            self.SoundQueue.append(command)
+        self.SoundQueue.append(command)
 
-        self.SoundPlaying = True
-        if self.loc[command]["files"]:
-            file=random.choice(self.loc[command]["files"])
-            self.vc.play(discord.FFmpegPCMAudio(executable=self.ffmpeg, source=file))
-            self.vc.source.volume = 2
-
-    async def skip(self):
+    def skip(self):
         """skip current sound"""
         self.vc.pause()
-        if len(self.SoundQueue) >= 1:
-            del self.SoundQueue[0]
-        if (self.SoundQueue):
-            await self.play(self.SoundQueue[0])
+
+    def clear(self):
+        self.SoundQueue.clear()
+        if self.vc.is_playing():
+            self.vc.pause()
+
 
     @tasks.loop(seconds = 1)
     async def rape(self):
         if random.random()<0.00001:
-            await self.play("earRape")
+            self.play("earRape")
 
     @tasks.loop(seconds = 0.1)
     async def playAudio(self):
@@ -119,19 +111,19 @@ class serverClient():
                 try:
                     name=removeAccentuation(i.lower())
                     if self.loc[name]["type"]=="voice":
-                        await self.play(name)
+                        self.play(name)
                 except: pass
 
 
-    @tasks.loop(seconds = 0.1)
+    @tasks.loop(seconds = 1)
     async def check_sound(self):
         """Play sound in the queue if current music stops"""
-        if not self.SoundQueue or not self.SoundStatus: return
-        if not self.vc.is_playing():
-            if self.SoundPlaying:
-                del self.SoundQueue[0]
-                if (self.SoundQueue):
-                    await self.play(self.SoundQueue[0])
+        if self.SoundQueue and not self.vc.is_playing():
+            command = self.SoundQueue.pop(0)
+            if self.loc[command]["files"]:
+                file=random.choice(self.loc[command]["files"])
+                self.vc.play(discord.FFmpegPCMAudio(executable=self.ffmpeg, source=file))
+                self.vc.source.volume = 2
 
 
     def genQuote(self,content):

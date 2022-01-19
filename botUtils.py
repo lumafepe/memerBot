@@ -14,7 +14,7 @@ async def addImage(Name:str,ctx,loc:dict):
     if len(args)==2:
         try:
             NewEntrance=f"{id}/imageFiles/{getNewLinkName(Name,loc)}.png"
-            await ctx.attachments[0].save(NewEntrance)
+            await ctx.message.attachments[0].save(NewEntrance)
             return NewEntrance
         except:
             await ctx.channel.send("invalid attatchment")
@@ -28,13 +28,14 @@ async def addAudio(Name:str,ctx,loc:dict):
     args=ctx.message.content.split()
     if len(args)==2:
         try:
-            if "mp3" in ctx.attachments[0].filename:
+            if "mp3" in ctx.message.attachments[0].filename:
                 NewEntrance=f"{id}/audioFiles/{getNewLinkName(Name,loc)}.mp3"
-            if "wav" in ctx.attachments[0].filename:
+            if "wav" in ctx.message.attachments[0].filename:
                 NewEntrance=f"{id}/audioFiles/{getNewLinkName(Name,loc)}.wav"
-            await ctx.attachments[0].save(NewEntrance)
+            await ctx.message.attachments[0].save(NewEntrance)
             return NewEntrance
-        except:
+        except Exception as e:
+            print(e)
             await ctx.channel.send("invalid attachment")
             return None
 
@@ -42,7 +43,10 @@ async def addAudio(Name:str,ctx,loc:dict):
         link=args[2]
         try:
             NewEntrance=safeMp3File(link,id,getNewLinkName(Name,loc))
-            return NewEntrance
+            if NewEntrance=="video is too big":
+                await ctx.channel.send("the video is too big to be added")
+                return None
+            else: return NewEntrance
         except:
             await ctx.channel.send("invalid link")
             return None

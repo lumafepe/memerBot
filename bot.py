@@ -82,8 +82,12 @@ if __name__ == '__main__':
 	@client.command(pass_context=True)
 	async def skip(ctx):
 		"""skip current sound"""
-		await client.servers[ctx.guild.id].skip()
+		client.servers[ctx.guild.id].skip()
 
+	@client.command(pass_context=True)
+	async def clear(ctx):
+		"""clears queue"""
+		client.servers[ctx.guild.id].clear()
 
 	@client.command(pass_context=True)
 	async def delCommand(ctx):
@@ -145,7 +149,11 @@ if __name__ == '__main__':
 				vc=client.servers[user.guild.id].vc
 				if vc.is_playing(): vc.stop()
 				vc.play(discord.FFmpegPCMAudio(executable=client.ffmpeg, source="welcome.mp3"))
-		
+		elif before.channel==after.channel:
+			if before.self_mute and not after.self_mute:
+				vc=client.servers[user.guild.id].vc
+				if vc.is_playing(): vc.stop()
+				vc.play(discord.FFmpegPCMAudio(executable=client.ffmpeg, source="back.mp3"))
 		await asyncio.sleep(0.01)
 
 
