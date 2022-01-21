@@ -34,13 +34,13 @@ class MemeDiscordBot(AutoShardedBot):
         except:
             createFilesNeeded(id)
             loc=load_commands(id)
-            self.servers[id]=serverClient(id,ctx,vc,loc,sink,self.ffmpeg,self.ptmodel)
+            self.servers[id]=serverClient(id,vc,loc,sink,self.ffmpeg,self.ptmodel)
 
     def addNonVoiceSercer(self,message):
         id=message.guild.id
         createFilesNeeded(id)
         loc=load_commands(id)
-        self.servers[id]=serverClient(id,None,None,loc,None,self.ffmpeg,None)
+        self.servers[id]=serverClient(id,None,loc,None,self.ffmpeg,None)
 
     def updateServer(self,id):
         self.servers[id].loc=load_commands(id)
