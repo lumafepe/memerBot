@@ -10,7 +10,7 @@ from discord.ext import tasks
 
 
 class MemeDiscordBot(AutoShardedBot):
-    def __init__(self,recog="vosk"):
+    def __init__(self):
         with open('config.json') as json_file:
             config = json.load(json_file)
         super(MemeDiscordBot, self).__init__(command_prefix=config["Invocation"],fetch_offline_members=False,case_insensitive=False,help_command=None)
@@ -18,7 +18,6 @@ class MemeDiscordBot(AutoShardedBot):
         else: self.ffmpeg=config["ffmpegLinux"]
         self.prefix=config["Invocation"]
         self.token=config["token"]
-        self.recog=recog
         self.ptmodel = Model("modelPT")
         self.servers={}
 
@@ -35,13 +34,13 @@ class MemeDiscordBot(AutoShardedBot):
         except:
             createFilesNeeded(id)
             loc=load_commands(id)
-            self.servers[id]=serverClient(self.recog,id,ctx,vc,loc,sink,self.ffmpeg,self.ptmodel)
+            self.servers[id]=serverClient(id,ctx,vc,loc,sink,self.ffmpeg,self.ptmodel)
 
     def addNonVoiceSercer(self,message):
         id=message.guild.id
         createFilesNeeded(id)
         loc=load_commands(id)
-        self.servers[id]=serverClient(self.recog,id,None,None,loc,None,self.ffmpeg,None)
+        self.servers[id]=serverClient(id,None,None,loc,None,self.ffmpeg,None)
 
     def updateServer(self,id):
         self.servers[id].loc=load_commands(id)
@@ -51,26 +50,18 @@ class MemeDiscordBot(AutoShardedBot):
         self.servers[id].suicide()
         del self.servers[id]
 class serverClient():
-    def __init__(self,recog:str,id:int,ctx,vc,loc:dict,sink:MySink,ffmpeg:str,ptmodel):
+    def __init__(self,id:int,vc,loc:dict,sink:MySink,ffmpeg:str,ptmodel):
         self.id=id
-        self.ctx=ctx
         self.vc=vc
         self.ffmpeg=ffmpeg
-        self.waiting = False
-        self.timer = 0
-        self.SoundPlaying = False
         self.SoundQueue = []
-        self.SoundTimer = 0
-        self.SoundStatus = False
         self.loc=loc
         self.sink=sink
-        self.recog=recog
-        if recog=="vosk":
-            SetLogLevel(0)
-            if ptmodel:
-                self.ptRecognizer = KaldiRecognizer(ptmodel,48000)
-                self.ptRecognizer.SetWords(True)
-            else: self.ptRecognizer = None
+        SetLogLevel(0)
+        if ptmodel:
+            self.ptRecognizer = KaldiRecognizer(ptmodel,48000)
+            self.ptRecognizer.SetWords(True)
+        else: self.ptRecognizer = None
 
     def addRecognizer(self,model:Model,lang:str):
         if lang == 'pt':
@@ -101,12 +92,10 @@ class serverClient():
     async def playAudio(self):
         for _ in range(len(self.sink.voiceQueue)):
             data=self.sink.voiceQueue.pop(0)
-            if (self.recog=="vosk"):
-                mono=convertToMono(data)
-
-                textdict=json.loads(unsafe_Vosk_speech_to_text(self.ptRecognizer,mono))# remove if you don't want portuguese
-                text=textdict["text"] # remove if you don't want portuguese
-                print(text)
+            mono=convertToMono(data)
+            textdict=json.loads(unsafe_Vosk_speech_to_text(self.ptRecognizer,mono))# remove if you don't want portuguese
+            text=textdict["text"] # remove if you don't want portuguese
+            print(text)
             for i in text.split():
                 try:
                     name=removeAccentuation(i.lower())
