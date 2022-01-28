@@ -154,8 +154,7 @@ if __name__ == '__main__':
 				vc=client.servers[user.guild.id].vc
 				if vc.is_playing(): vc.stop()
 				vc.play(discord.FFmpegPCMAudio(executable=client.ffmpeg, source="back.mp3"))
-		elif before.channel==after.channel:
-			if not before.mute and after.mute:
+			elif not before.mute and after.mute:
 				vc=client.servers[user.guild.id].vc
 				if vc.is_playing(): vc.stop()
 				vc.play(discord.FFmpegPCMAudio(executable=client.ffmpeg, source="serverMute.mp3"))
