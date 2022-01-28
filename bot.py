@@ -111,7 +111,7 @@ if __name__ == '__main__':
 	async def copyServerPreset(ctx):
 		content=ctx.message.content
 		args=content.split()
-		if len(args)<2: 
+		if len(args)<2:
 			await ctx.send("wrong number of arguments")
 			return
 		if args[1]=="-h":
@@ -127,7 +127,7 @@ if __name__ == '__main__':
 		if destinationId in client.servers:
 			client.updateServer(destinationId)
 		await ctx.send("done")
-		
+
 
 
 	@client.event
@@ -154,12 +154,17 @@ if __name__ == '__main__':
 				vc=client.servers[user.guild.id].vc
 				if vc.is_playing(): vc.stop()
 				vc.play(discord.FFmpegPCMAudio(executable=client.ffmpeg, source="back.mp3"))
+		elif before.channel==after.channel:
+			if not before.mute and after.mute:
+				vc=client.servers[user.guild.id].vc
+				if vc.is_playing(): vc.stop()
+				vc.play(discord.FFmpegPCMAudio(executable=client.ffmpeg, source="serverMute.mp3"))
 		await asyncio.sleep(0.01)
 
 
 
 
-			
+
 
 
 	@client.event
