@@ -44,7 +44,7 @@ class MemeDiscordBot(AutoShardedBot):
 
     def updateServer(self,id):
         self.servers[id].loc=load_commands(id)
-        
+
 
     def KillServer(self,id):
         self.servers[id].suicide()
@@ -118,13 +118,13 @@ class serverClient():
     def genQuote(self,content):
         args=content.split()
         if len(args)==3:
-            id=int(args[1][2:-1])
+            id=int(args[1][2:-1].replace("!",""))
             seconds=int(args[2])
             if 0>seconds>30:
                 return "not a valid time"
             elif id not in self.sink.audio_data:
                 return "not a valid user to record"
-            else: 
+            else:
                 self.sink.storeQuote(id,seconds)
                 return f"quote stored temporarly is now in the {len(self.sink.quoteQueue)} position"
         elif len(args)==2 and args[1]=='-h': return "usage: genQuote {@person} {Number of seconds (max 30)}"
@@ -208,4 +208,4 @@ class serverClient():
         self.sink.updateData.stop()
         self.playAudio.stop()
         while self.check_sound.is_running() and self.rape.is_running() and self.sink.updateData.is_running() and self.playAudio.is_running(): pass
-        
+
